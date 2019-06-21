@@ -1,0 +1,10 @@
+﻿Bata机 192.168.88.12 外网 180.157.45.9:50101
+测试机 192.168.88.11
+
+dev
+http://192.168.85.85:8082/imefuture_drawingcenter_web/drawOptIf/drawTransferCallback
+http://192.168.85.85:8082/imefuture_drawingcenter_web/drawOptIf/checkDrawToken?enterpriseNo=有没有收到数据&data=1
+
+bate 
+https://betadwapi.imefuture.com/drawOptIf/drawTransferCallback
+https://betadwapi.imefuture.com/drawOptIf/checkDrawToken

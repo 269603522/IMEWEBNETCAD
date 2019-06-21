@@ -1,0 +1,51 @@
+.fixed-bottom {
+  position: fixed;
+  bottom: 10px;
+  z-index: 999;
+  left: 50%;
+  -webkit-transform: translate(-50%);
+  -ms-transform: translate(-50%);
+  transform: translate(-50%);
+  display: -ms-flexbox;
+  display: flex; }
+
+.fixed-bottom .nav-button-radius {
+  display: -ms-flexbox;
+  display: flex;
+  margin: 0 4px; }
+
+.fixed-bottom .nav-button-radius .nav-button:first-child .icon {
+  border-radius: 5px 0 0 5px; }
+
+.fixed-bottom .nav-button-radius .nav-button:last-child .icon {
+  border-radius: 0 5px 5px 0; }
+
+.fixed-bottom .nav-button {
+  cursor: pointer; }
+
+.fixed-bottom .nav-button .icon {
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-align: center;
+  align-items: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  background: #292929; }
+
+.fixed-bottom .nav-button .icon svg {
+  fill: #fff;
+  width: 26px;
+  height: 26px; }
+
+.fixed-bottom .nav-button h3 {
+  font-size: 12px;
+  text-align: center;
+  margin-top: 10px; }
+
+.fixed-bottom .nav-button-radius .nav-button-distance .icon,
+.fixed-bottom .nav-button-radius .nav-button-print .icon {
+  border-radius: 5px !important; }
+
+/*# sourceMappingURL=fixed.css.map */

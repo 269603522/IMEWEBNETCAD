@@ -1,0 +1,128 @@
+html, body {
+	height: 100%;
+}
+
+* html #page {
+	height: 100%;
+}
+
+html, body {
+	margin:0;
+  	padding:0;
+	height: 100%;
+	min-height: 100%;
+}
+
+body{
+  margin:0;
+  padding:0;
+  font-family: Trebuchet, Arial, Helvetica;
+  background-color: #FFFFFF;
+  min-width:1000px;
+}
+#page {
+	padding-top:0px;
+ 	padding-bottom:0px;
+ 	
+	width:100%;
+	margin-left: auto;
+    margin-right: auto;
+ 	
+	margin-top:0px;
+	margin-bottom:0px;
+	/* Fallback for web browsers that doesn't support RGBa */
+	background: rgb(255, 255, 255);
+	/* RGBa with 0.6 opacity */
+	background: rgba(255, 255, 255, 0.7);
+	
+	border-right: solid 1px #EBE7E7;
+	border-left: solid 1px #EBE7E7;
+	min-height: 100%;
+}
+
+#pluginName{
+	float:right;
+	margin-right: 10px;
+	margin-top:40px;
+	color:#E44C26;
+	font-size:14px;
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+#pageContent{
+	position:absolute;
+ 	padding-top:0px;
+ 	padding-left:0px;
+ 	padding-right:0px;
+ 	width:100%;
+ 	overflow:hidden;
+}
+.pageListItem {
+    position: absolute;
+    width: 100%;
+}
+
+header {
+    min-width: 100%;
+    left: 0px;
+    position: absolute;
+    height: 100px;
+    width: 100%;
+    display: block;
+    background-image: url(assets/header.png);
+    border-bottom: solid 3px #100000;
+    border-top: solid 3px #100000;
+    box-shadow: 0px 0px 10px #000;
+    z-index: 5;
+}
+
+#headerContainer {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+
+
+#pluginDetails{
+	margin-top: 0px;
+}
+
+#imgContainer {
+    width: 100%;
+    height: 100%;
+}
+
+#positionButtonDiv{
+	/* Fallback for web browsers that doesn't support RGBa */
+	background: rgb(58, 56, 63);
+	/* RGBa with 0.6 opacity */
+	background: rgba(58, 56, 63, 0.8);	
+	border: solid 1px #100000;
+	color:#FFFFFF;
+	padding: 8px;
+	text-align: left;
+	position:absolute;
+	right: 35px;
+	top: 0px;
+}
+
+#positionButtonDiv .positionButtonSpan img{
+	float: right;
+	border:0;
+}
+
+.positionMapClass area{
+	cursor: pointer;
+}
+
+.zoomButton{
+	border:0;
+	cursor: pointer;
+}
+
+.zoomableContainer{
+	background-image: url("assets/transparent.png");
+}
+
+

@@ -1,0 +1,113 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Vue.js</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 引入 Bootstrap -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <!-- 引入 vue.js -->
+    <script src="https://unpkg.com/vue"></script>
+    <style type="text/css">
+        .list-group button {
+            background: none;
+            border: 0;
+            color: red;
+            outline: 0;
+            float: right;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="app" v-cloak>
+        <p v-show="remainTask.length>0">任务列表 ({{remainTask.length}})</p>
+        <ul class="list-group">
+            <template v-for="task in remainTask">
+                <li class="list-group-item">
+                    <span v-on:dblclick="editTask(task)" title="编辑任务">{{task.text}}</span>
+                    <button v-on:click="removeTask(task)" title="移除任务">&#10007;</button>
+                    <button v-on:click="completeTask(task)" title="任务完成">&#10004;</button>
+                </li>
+            </template>
+        </ul>
+        <form>
+            <div class="form-group">
+                <label for="exampleInputEmail1">任务描述</label>
+                <input type="text" class="form-control" placeholder="请输入你要添加的任务" v-model="newTask" required>
+            </div>
+            <div class="form-group">
+                <button class="btn btn-primary" type="submit" v-on:click="addTask">添加任务</button>
+            </div>
+        </form>
+        <p>已完成的Task({{filterTask.length}})</p>
+        <ol class="list-group">
+            <template v-for="task in filterTask">
+                <li class="list-group-item">
+                    {{task.text}}
+                </li>
+            </template>
+        </ol>
+    </div>
+    <script type="text/javascript">
+        var app = new Vue({   //创建Vue对象实例
+            el: "#app", //挂载DOM元素的ID
+            data: {
+                tasks: [
+                    { text: "Vue.js - 是一套构建用户界面的渐进式框架", complete: false },
+                    { text: "Bootstrap 响应式布局", complete: false },
+                    { text: "Webpack前端资源模块化管理和打包工具", complete: false },
+                    { text: "Yarn 中文手册Yarn 是一个快速、可靠、安全的依赖管理工具", complete: true },
+                    { text: "JavaScript语言精粹", complete: false },
+                    { text: "JavaScript高级程序设计", complete: true }
+                ],
+                newTask: "程序员的修炼之道" //默认值
+            },
+            methods: {
+                addTask: function (event) {  //添加任务
+                    event.preventDefault();
+                    this.tasks.push({
+                        text: this.newTask,
+                        complete: false
+                    });
+                    this.newTask = "";
+                },
+                editTask: function (task) { //编辑任务
+                    //移除当前点击task
+                    this.removeTask(task);
+
+                    //更新vue实例中newTask值
+                    this.newTask = task.text;
+                },
+                removeTask: function (task) { //删除任务
+                    //指向Vue实例中的tasks
+                    _tasks = this.tasks;
+                    //remove
+                    _tasks.forEach(function (item, index) {
+                        if (item.text == task.text) {
+                            _tasks.splice(index, 1);
+                        }
+                    })
+                },
+                completeTask: function (task) { //任务完成状态
+                    task.complete = true; //设置任务完成的状态
+                }
+            },
+            //用于计算属性，属性的计算是基于它的依赖缓存(如vue实例中的tasks)
+            //只有当tasks数据变化时,才会重新取值
+            computed: {
+                remainTask: function () { //筛选未完成的记录
+                    return this.tasks.filter(function (task) { //filter过滤器
+                        return !task.complete;
+                    })
+                },
+                filterTask: function () {  //筛选已完成的记录
+                    return this.tasks.filter(function (task) {
+                        return task.complete;
+                    })
+                }
+            }
+        });
+    </script>
+</body>
+</html>

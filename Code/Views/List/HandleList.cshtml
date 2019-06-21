@@ -1,0 +1,210 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>文件预处理列表</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 引入 Bootstrap -->
+    <link href="~/Content/Site.css" rel="stylesheet" />
+    <link href="~/Content/Vue/bootstrap.min.css" rel="stylesheet" />
+    <link href="/Content/VPage/zpageNav.css" rel="stylesheet" />
+    <!-- 引入 vue.js -->
+    <script src="~/Content/Vue/vue.js"></script>
+    <script src="~/Content/Vue/axios.min.js"></script>
+    <script src="/Content/VPage/zpageNav.js"></script>
+    <style type="text/css">
+        body {
+            font-family: arial;
+        }
+
+
+        table {
+            border: 1px solid #ccc;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            border-collapse: collapse;
+            border-spacing: 0;
+            margin: 0 auto;
+        }
+
+            table tr {
+                border: 1px solid #ddd;
+                padding: 5px;
+            }
+
+            table th, table td {
+                padding: 10px;
+                text-align: center;
+            }
+
+            table th {
+                text-transform: uppercase;
+                font-size: 14px;
+                letter-spacing: 1px;
+            }
+
+        @@media screen and (max-width: 1000px) {
+
+            table {
+                border: 0;
+            }
+
+                table thead {
+                    display: none;
+                }
+
+                table tr {
+                    margin-bottom: 10px;
+                    display: block;
+                    border-bottom: 2px solid #ddd;
+                }
+
+                table td {
+                    display: block;
+                    text-align: right;
+                    font-size: 13px;
+                    border-bottom: 1px dotted #ccc;
+                }
+
+                    table td:last-child {
+                        border-bottom: 0;
+                    }
+
+                    table td:before {
+                        content: attr(data-label);
+                        float: left;
+                        text-transform: uppercase;
+                        font-weight: bold;
+                    }
+        }
+
+        .note {
+            max-width: 80%;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align:center;font-size:48px; font-family:Arial;font-weight:normal;">预处理记录列表</h1>
+    <br />
+    <a href="/List/ReadingList" id="aReadingList">文件查看下载列表</a>
+    <br />
+    <br />
+    <div  id="app" v-cloak>
+
+        <p v-show="handledFile.length>0">预处理记录 ({{totalSize}})</p>
+        <zpagenav v-bind:page="page" v-bind:page-size="pageSize" v-bind:total="total"
+                  v-bind:max-page="maxPage" v-on:pagehandler="pageHandler">
+        </zpagenav>
+        <table>
+            <thead>
+                <tr>
+                    <th>缩略图</th>
+                    <th>编号</th>
+                    <th>文件路径</th>
+                    <th>IP</th>
+                    <th>时间</th>
+                    <th>拷贝</th>
+                    <th>预处理号</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                <template v-for="file in handledFile">
+                    <tr>
+                        <td data-label="缩略图"><img style="width:50px;height:50px;" v-bind:src="file.urlThumbnail" /></td>
+                        <td data-label="编号">{{file.FileJavaID}}</td>
+                        <td data-label="路径">{{file.FileURL}}</td>
+                        <td data-label="IP">{{file.IP}}</td>
+                        <td data-label="时间">{{file.CreateTime}}</td>
+                        <td data-label="拷贝">{{file.IsCopy}}</td>
+                        <td data-label="拷贝">{{file.FileCode}}</td>
+                        <td data-label="操作">
+                               <button v-on:click="viewFile(file)" class="btn-info" title="查看">查看</button>
+                        </td>
+                    </tr>
+                </template>
+            </tbody>
+        </table>
+        <zpagenav v-bind:page="page" v-bind:page-size="pageSize" v-bind:total="total"
+                  v-bind:max-page="maxPage" v-on:pagehandler="pageHandler">
+        </zpagenav>
+    </div>
+    <script type="text/javascript">
+        var app = new Vue({   //创建Vue对象实例
+            el: "#app", //挂载DOM元素的ID
+            data: {
+                page: 1,  //显示的是哪一页
+                pageSize: 10, //每一页显示的数据条数
+                total: 1, //记录总数
+                maxPage: 9  //最大页数
+                ,
+                Files: []
+            },
+            methods: {
+                viewFile: function (file) { //查看
+                    var handleCode = file.FileCode;
+                    var fileNewPath = file.FileURL;
+                    var fileJavaID = file.FileJavaID;
+                    var strUrl = window.location.protocol + "//" + window.location.host + "/UnitTest/getViewURL?handleCode=" + handleCode + "&fileNewPath=" + fileNewPath + "&fileJavaID=" + fileJavaID;
+                    axios.get(strUrl).then(function (result) {
+                        var dataStr = result.data;
+                        alert(dataStr);
+                       // console.log(dataStr);
+                       // window.open(dataStr.Result.lan, "blank");
+                    });
+                },
+                removeFile: function (file) { //删除
+                    _files = this.Files;
+
+                    //remove
+                    _files.forEach(function (item, index) {
+                        debugger;
+                        if (item.ID == file.ID) {
+                            _files.splice(index, 1);
+                            app.$data.total--;
+                        }
+                    });
+                }
+                ,	//pagehandler方法 跳转到page页
+                pageHandler: function (page) {
+                    //here you can do custom state update
+                    console.log(page);
+                    this.page = page;
+                    var url = "/List/getHandleList/?pageIndex=" + page + "&pageSize=10";
+                    _this = this;
+                    axios.get(url).then(function (result) {
+                        var datas = result.data.split("|_CUT_|");
+                        console.log(result.data);
+                        var dataStr = datas[1].replace(/\\/g, "\\\\");
+                        // console.log(dataStr);
+                        var _files = (new Function("", "return " + dataStr))();
+                        _this.$data.total = parseInt(datas[0]);
+                        _this.$data.Files = _files;
+                    });
+                }
+            },
+            //用于计算属性，属性的计算是基于它的依赖缓存(如vue实例中的Files)
+            //只有当Files数据变化时,才会重新取值
+            computed: {
+                handledFile: function () { //筛选未完成的记录
+                    return this.Files.filter(function (File) { //filter过滤器
+                        File.urlThumbnail = "https://192.168.255.103:2019/CADViewer/getThumbnail/?code=jdvz5e8m1gbxmdwm7lnzhjgyjfhmbve37k1djtjy7849hetcsodophs5jf4qdmn7km4hjpygrumrmf7tiu4oadmxlrjgg5qv0kgrhiv5pfyujkgs1p" ;
+                        return (File.IsCopy == File.IsCopy);
+                    });
+                }
+                , totalSize: function () {
+                    return this.$data.total;
+                }
+            }
+            , created: function () {
+                //created  表示页面加载完毕，立即执行
+                this.pageHandler(1);
+            }
+        });
+
+
+    </script>
+
+</body>
+</html>

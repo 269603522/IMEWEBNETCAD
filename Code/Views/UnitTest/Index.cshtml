@@ -1,0 +1,770 @@
+﻿@{
+    ViewBag.Title = "Index";
+}
+<script src="~/Content/DataTables/jquery-3.3.1.js"></script>
+<h2>批量生成测试数据并添加打消息队列</h2>
+<div>
+    <input type="text" placeholder="关键字" id="createkeyWord" value="" style="width:120px;" />
+    <input type="text" placeholder="循环数" id="createCount" value="1" style="width:40px;" />
+    @*<input type="file" value="" id="createTestFile" placeholder="测试文件" onchange="onCreateTestFile()" />*@
+    <select id="createFileType" onchange="doCreateFileTypeChange()">
+        <option value="cad">CAD文件</option>
+        <option value="img">图片文件</option>
+        <option value="pdf">PDF文件</option>
+        <option value="dxf">DXF文件</option>
+    </select>
+    <input type="button" value="批量生成测试文件并添加到消息队列" id="doCreateDummyFileAdnData" onclick="doCreateDummyFileAdnData()" class="btn-info" />
+    <div id="createResult" style="width:100%;height:100px; overflow-y:auto; border-style:solid;border-width:1px; background-color:#b6ff00;">
+
+    </div>
+</div>
+<hr />
+<h2>消息队列查看（只读不出列）</h2>
+<div>
+    <select id="optType"><option value="view">查看</option><option value="del">移除</option></select>
+    <input type="button" value="原始消息队列数据" id="doViewMSMQData" onclick="doViewMSMQData(0)" class="btn-info" />
+    <input type="button" value="一级消息队列数据" id="doViewMSMQData" onclick="doViewMSMQData(1)" class="btn-info" />
+    <input type="button" value="二级消息队列数据" id="doViewMSMQData" onclick="doViewMSMQData(2)" class="btn-info" />
+    <input type="button" value="不处理消息队列数据" id="doViewMSMQData" onclick="doViewMSMQData(-1)" class="btn-info" />
+    数目：<input type="text" placeholder="查看数目" id="msmqCount" value="100" style="width:40px;" />
+    <div id="viewMSMQ" style="width:100%;height:100px; overflow-y:auto; border-style:solid;border-width:1px; background-color:#b6ff00;">
+    </div>
+</div>
+<hr />
+<h2>通讯加解密</h2>
+<input type="text" value="" placeholder="密钥" id="aesKey" style="width:120px;" />
+<input type="button" value="加密" id="doEncrypt" onclick="doEncrypt()" class="btn-info" />
+<input type="button" value="解密" id="doDecrypt" onclick="doDecrypt()" class="btn-info" />
+<textarea style="width:100%;height:120px;" id="aesSrc">
+</textarea>
+<div id="aesTarget" style="width:100%;height:100px; overflow-y:auto; border-style:solid;border-width:1px; background-color:#b6ff00;">
+</div>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- 引入 Bootstrap -->
+<link href="~/Content/Site.css" rel="stylesheet" />
+<link href="~/Content/Vue/bootstrap.min.css" rel="stylesheet" />
+<link href="/Content/VPage/zpageNav.css" rel="stylesheet" />
+<!-- 引入 vue.js -->
+<script src="~/Content/Vue/vue.js"></script>
+<script src="~/Content/Vue/axios.min.js"></script>
+<script src="/Content/VPage/zpageNav.js"></script>
+<style type="text/css">
+    body {
+        font-family: arial;
+        padding: 2px;
+    }
+
+    table {
+        border: 1px solid #ccc;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        border-collapse: collapse;
+        border-spacing: 0;
+        margin: 0 auto;
+    }
+
+        table tr {
+            border: 1px solid #ddd;
+            padding: 5px;
+        }
+
+        table th, table td {
+            padding: 10px;
+            text-align: center;
+        }
+
+        table th {
+            text-transform: uppercase;
+            font-size: 14px;
+            letter-spacing: 1px;
+        }
+
+    @@media screen and (max-width:1000px) {
+        table {
+            border: 0;
+        }
+
+            table thead {
+                display: none;
+            }
+
+            table tr {
+                margin-bottom: 10px;
+                display: block;
+                border-bottom: 2px solid #ddd;
+            }
+
+            table td {
+                display: block;
+                text-align: right;
+                font-size: 13px;
+                border-bottom: 1px dotted #ccc;
+            }
+
+                table td:last-child {
+                    border-bottom: 0;
+                }
+
+                table td:before {
+                    content: attr(data-label);
+                    float: left;
+                    text-transform: uppercase;
+                    font-weight: bold;
+                }
+    }
+
+    .note {
+        max-width: 80%;
+        margin: 0 auto;
+    }
+
+    .UPICTop {
+        margin-bottom: 20px;
+        border-style: solid;
+        border-width: 0px;
+        background-color: #efefef;
+        padding: 20px;
+    }
+
+        .UPICTop img {
+            cursor: pointer;
+            color: blue;
+        }
+
+        .UPICTop table {
+            width: 100%;
+        }
+
+    .UPICTop_l {
+        text-align: left;
+        width: 120px;
+    }
+
+    .UPICTop_r {
+        text-align: right;
+    }
+
+    .spFile {
+        color: blue;
+        margin-bottom: 20px;
+        border-style: solid;
+        border-width: 0px;
+        float: left;
+        text-align: center;
+        width: 160px;
+        height: 170px;
+        margin-right: 20px;
+        overflow: hidden;
+    }
+
+        .spFile .spOptString {
+            color: Red;
+            cursor: pointer;
+        }
+
+        .spFile:hover {
+            background-color: wheat;
+        }
+
+    .spDir {
+        cursor: pointer;
+        color: red;
+        margin-bottom: 20px;
+        border-style: solid;
+        border-width: 0px;
+        float: left;
+        text-align: center;
+        width: 160px;
+        height: 170px;
+        margin-right: 20px;
+        overflow: hidden;
+    }
+
+        .spDir:hover {
+            background-color: wheat;
+        }
+
+    .myQueueCount {
+        padding: 2px;
+        background-color: #188def;
+        color: #ffffff;
+        margin: 1px;
+        display: flex;
+    }
+
+    .myQueueItem {
+        padding: 2px;
+        background-color: #efefef;
+        margin: 1px;
+        word-wrap: break-word;
+    }
+
+        .myQueueItem:hover {
+            background-color: #e8d827;
+            color: #188def;
+            cursor: pointer;
+        }
+
+    .myQueueItemSelect {
+        background-color: #f21515;
+        color: blue;
+        cursor: pointer;
+    }
+
+    .myQueueItemSelectContentResult {
+        background-color: azure;
+    }
+
+    .nameText {
+        border-width: 0px;
+        background-color: #f7eeee;
+        text-align: center;
+    }
+    .highcharts-credits {
+        display:none;
+    }
+</style>
+<h2>预处理记录列表</h2>
+<a href="/List/ReadingList" id="aReadingList" target="_blank">文件查看下载列表</a>
+<br />
+<div id="app" v-cloak>
+
+    <zpagenav v-bind:page="page" v-bind:page-size="pageSize" v-bind:total="total"
+              v-bind:max-page="maxPage" v-on:pagehandler="pageHandler">
+    </zpagenav>
+    <table>
+        <thead>
+            <tr>
+                <th>缩略图</th>
+                <th>编号</th>
+                <th>文件路径</th>
+                <th>IP</th>
+                <th>时间</th>
+                <th>拷贝</th>
+                <th>预处理号</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            <template v-for="file in handledFile">
+                <tr>
+                    <td data-label="缩略图"><img style="width:50px;height:50px;" v-bind:src="file.urlThumbnail" /></td>
+                    <td data-label="编号">{{file.FileJavaID}}</td>
+                    <td data-label="路径" style="text-overflow:ellipsis;">{{file.FileURL}}</td>
+                    <td data-label="IP">{{file.IP}}</td>
+                    <td data-label="时间">{{file.CreateTime}}</td>
+                    <td data-label="拷贝">{{file.IsCopy}}</td>
+                    <td data-label="文件号">{{file.FileCode}}</td>
+                    <td data-label="操作">
+                        <button v-on:click="viewFile(file)" class="btn-info" title="查看">查看</button>
+                        <button v-on:click="removeFile(file)" class="btn-submit" title="删除">删除</button>
+                    </td>
+                </tr>
+            </template>
+        </tbody>
+    </table>
+    <zpagenav v-bind:page="page" v-bind:page-size="pageSize" v-bind:total="total"
+              v-bind:max-page="maxPage" v-on:pagehandler="pageHandler">
+    </zpagenav>
+</div>
+<h2>运行日志查询</h2>
+<div>
+    请选择查看类型:
+    <select id="viewSelectType">
+        <option value="actionLog">
+            网站运行日志
+        </option>
+        <option value="exceptionLog">
+            网站异常日志
+        </option>
+        <option value="serverLog">
+            服务日志
+        </option>
+        <option value="tempFtp">
+            临时FTP
+        </option>
+        <option value="finalDir">
+            最终文件目录
+        </option>
+    </select>
+    <input type="button" value="查看" onclick="DoViewLog()" class="btn-info" />
+</div>
+<div style="width:100%;height:300px;background-color:aliceblue;border-style:solid;border-width:1px;padding:4px;margin-bottom:30px; overflow-y:auto;" id="viewSelectResult">
+</div>
+<div style="width:100%;height:40px;border-style:solid;border-width:0px;padding:4px;margin-bottom:30px;">
+    <a target="_blank" href="/UnitTest/testDB">测试数据库连接</a>
+</div>
+<script type="text/javascript">
+    var app = new Vue({   //创建Vue对象实例
+        el: "#app", //挂载DOM元素的ID
+        data: {
+            page: 1,  //显示的是哪一页
+            pageSize: 10, //每一页显示的数据条数
+            total: 1, //记录总数
+            maxPage: 9  //最大页数
+            ,
+            Files: []
+        },
+        methods: {
+            viewFile: function (file) { //查看
+                var handleCode = file.FileCode;
+                var fileNewPath = file.FileURL;
+                var fileJavaID = file.FileJavaID;
+                var strUrl = window.location.protocol + "//" + window.location.host + "/UnitTest/getViewURL?handleCode=" + handleCode + "&fileNewPath=" + fileNewPath + "&fileJavaID=" + fileJavaID;
+                axios.get(strUrl).then(function (result) {
+                    var dataStr = result.data;
+                    if (dataStr.status == "1") {
+                        var newStrUrl = window.location.protocol + "//" + window.location.host + "/" + dataStr.displayUri + "&token=test";
+                        console.log(newStrUrl);
+                        window.open(newStrUrl, "blank");
+                    }
+                    else {
+                        alert(result.data);
+                    }
+                });
+            },
+
+            removeFile: function (file) { //删除
+                _files = this.Files;
+                var url = "/UnitTest/delHandle?code=0";
+                var strUrl = window.location.protocol + "//" + window.location.host + "/UnitTest/delHandle?code=" + file.FileCode;
+                _this = this;
+                axios.get(strUrl).then(function (result) {
+                    var datas = result.data;
+                    console.log(result.data);
+                    if (datas = "删除成功！");
+                    {
+                        _files.forEach(function (item, index) {
+                            if (item.ID == file.ID) {
+                                _files.splice(index, 1);
+                                app.$data.total--;
+                            }
+                        });
+                    }
+                });
+            }
+            ,	//pagehandler方法 跳转到page页
+            pageHandler: function (page) {
+                //here you can do custom state update
+                console.log(page);
+                this.page = page;
+                var url = "/List/getHandleList/?pageIndex=" + page + "&pageSize=10";
+                _this = this;
+                axios.get(url).then(function (result) {
+                    var datas = result.data.split("|_CUT_|");
+                    console.log(result.data);
+                    var dataStr = datas[1].replace(/\\/g, "\\\\");
+                    // console.log(dataStr);
+                    if (dataStr != "") {
+                        var _files = (new Function("", "return " + dataStr))();
+                        _this.$data.total = parseInt(datas[0]);
+                        _this.$data.Files = _files;
+                    }
+                    else {
+                        _this.$data.total = 0;
+                    }
+                });
+            }
+        },
+        //用于计算属性，属性的计算是基于它的依赖缓存(如vue实例中的Files)
+        //只有当Files数据变化时,才会重新取值
+        computed: {
+            handledFile: function () { //筛选未完成的记录
+                return this.Files.filter(function (File) { //filter过滤器
+                    File.urlThumbnail = "/UnitTest/CreateResultImg/?path=" + File.Thumbnail + "&needMapPath=false";
+                    return (File.IsCopy == File.IsCopy);
+                });
+            }
+            , totalSize: function () {
+                return this.$data.total;
+            }
+        }
+        , created: function () {
+            //created  表示页面加载完毕，立即执行
+            this.pageHandler(1);
+        }
+    });
+
+
+</script>
+
+<script type="text/javascript">
+    function doDecrypt() {
+        var url = "/UnitTest/aesDecrypt";
+        data = { data: $("#aesSrc").val(), key: $("#aesKey").val() }
+        $.post(url, data, function (result) {
+            $("#aesTarget").html(result);
+        });
+    }
+    function doEncrypt() {
+        var url = "/UnitTest/aesEncrypt";
+        data = { data: $("#aesSrc").val(), key: $("#aesKey").val() }
+        $.post(url, data, function (result) {
+            $("#aesTarget").html(result);
+        });
+    }
+    function doViewMSMQData(tag) {
+        $("#viewMSMQ").html("");
+        $("#viewMSMQ").attr("tag", tag);
+        if ($("#optType").val() == "view") {
+            var url = "/UnitTest/ListhandleFileRequest";
+            data = { maxCount: $("#msmqCount").val(), tag: tag }
+            $.post(url, data, function (result) {
+                $("#viewMSMQ").html(result);
+            });
+        }
+        else {
+            var url = "/UnitTest/delMSMQ";
+            data = { tag: tag }
+            $.post(url, data, function (result) {
+                $("#viewMSMQ").html(result);
+            });
+        }
+    }
+    function doCreateDummyFileAdnData() {
+        var url = "/UnitTest/testCreateDummyData";
+        data = { keyWord: $("#createkeyWord").val(), fileType: $("#createFileType").val(), testFile: $("#createTestFile").val(), count: $("#createCount").val() }
+        $.post(url, data, function (result) {
+            $("#createResult").html(result);
+        });
+    }
+    function doCreateFileTypeChange() {
+        $("#createTestFile").val("");
+    }
+    function onCreateTestFile() {
+        var createTestFile = $("#createTestFile").val();
+        var indexLast = createTestFile.lastIndexOf(".");
+        var fileType = createTestFile.substring(indexLast).toLocaleLowerCase();
+        if (fileType == ".dwg") {
+            $("#createFileType").val("cad");
+        }
+        else if (fileType == ".png" || fileType == ".bmp" || fileType == ".jpg" || fileType == ".jpeg") {
+            $("#createFileType").val("img");
+        }
+        else if (fileType == ".pdf") {
+            $("#createFileType").val("pdf");
+        }
+        else {
+            $("#createTestFile").val("");
+        }
+    }
+</script>
+<script type="text/javascript">
+    function OpenDir(obj) {
+        var viewSelectType = $("#viewSelectType").val();
+        $.post("/unittest/getFoldsAndFiles", { inPath: $(obj).attr("path") + "/" + $(obj).attr("name"), needOpt: true }, function (result) {
+            $("#viewSelectResult").html(result);
+        });
+    }
+    function DoViewLog() {
+        var viewSelectType = $("#viewSelectType").val();
+        $.post("/unittest/getDoViewLog", { action: viewSelectType }, function (result) {
+            $("#viewSelectResult").html(result);
+        });
+    }
+    function doOptView(obj) {
+        var thisObj = $(obj).parent();
+        var path = thisObj.attr("path") + "/" + thisObj.attr("name");
+        $.post("/unittest/ReadTxtContent", { path: path }, function (result) {
+            var viewSelectType = $("#viewSelectType").val();
+            if (viewSelectType == "actionLog" || viewSelectType == "exceptionLog") {
+                var textarea = document.createElement("div");
+                textarea.id = "viewPlant";
+                textarea.innerHTML = "<div>路径" + path + "</div><div><input type='button' value='关闭' onclick='$(this).parent().parent().remove()' class='btn-info'/><input type='button' value='删除' onclick='delLogFile(this)' tag='" + path +"' class='btn-submit'/></div><table border='1' style='z-index:9999'>" + result + "</table>";
+                textarea.style.width = "100%";
+                textarea.style.backgroundColor = "#ffffff";
+                textarea.style.height = "100%";
+                textarea.style.position = "absolute";
+                textarea.style.left = "0px";
+                textarea.style.top = thisObj.offset().top;
+                textarea.style.Zindex = "99999";
+                document.body.appendChild(textarea);
+            }
+            else {
+                var textarea = document.createElement("div");
+                textarea.id = "viewPlant";
+                textarea.innerHTML = "<div>路径" + path + "</div><div><input type='button' value='关闭' onclick='$(this).parent().parent().remove()' class='btn-info'/><input type='button' value='删除' onclick='delLogFile(this)' tag='" + path + "' class='btn-submit'/><input type='button' value='修改' onclick='editLogFile(this)' tag='" + path +"' class='btn-submit'/></div><textarea style='width:100%;height:600px;'>" + result + "</textarea>";
+                textarea.style.width = "100%";
+                textarea.style.backgroundColor = "#ffffff";
+                textarea.style.height = "100%";
+                textarea.style.position = "absolute";
+                textarea.style.left = "0px";
+                textarea.style.top = thisObj.offset().top;
+                textarea.style.Zindex = "99999";
+                document.body.appendChild(textarea);
+
+            }
+
+        });
+    }
+    function doViewPath(path) {
+        $.post("/unittest/ReadTxtContent", { path: path }, function (result) {
+            var viewSelectType = $("#viewSelectType").val();
+            if (viewSelectType == "actionLog" || viewSelectType == "exceptionLog") {
+                var textarea = document.createElement("div");
+                textarea.id = "viewPlant";
+                textarea.innerHTML = "<div>路径" + path + "</div><div><input type='button' value='关闭' onclick='$(this).parent().parent().remove()' class='btn-info'/><input type='button' value='删除' onclick='delLogFile(this)' tag='" + path + "' class='btn-submit'/></div><table border='1' style='z-index:9999'>" + result + "</table>";
+                textarea.style.width = "100%";
+                textarea.style.backgroundColor = "#ffffff";
+                textarea.style.height = "100%";
+                textarea.style.position = "absolute";
+                textarea.style.left = "0px";
+                textarea.style.top = thisObj.offset().top;
+                textarea.style.Zindex = "99999";
+                document.body.appendChild(textarea);
+            }
+            else {
+                var textarea = document.createElement("div");
+                textarea.id = "viewPlant";
+                textarea.innerHTML = "<div>路径" + path + "</div><div><input type='button' value='关闭' onclick='$(this).parent().parent().remove()' class='btn-info'/><input type='button' value='删除' onclick='delLogFile(this)' tag='" + path + "' class='btn-submit'/><input type='button' value='修改' onclick='editLogFile(this)' tag='" + path + "' class='btn-submit'/></div><textarea style='width:100%;height:600px;'>" + result + "</textarea>";
+                textarea.style.width = "100%";
+                textarea.style.backgroundColor = "#ffffff";
+                textarea.style.height = "100%";
+                textarea.style.position = "absolute";
+                textarea.style.left = "0px";
+                textarea.style.top = thisObj.offset().top;
+                textarea.style.Zindex = "99999";
+                document.body.appendChild(textarea);
+
+            }
+
+        });
+    }
+    function doOptDel(obj) {
+        var thisObj = $(obj).parent();
+        var path = thisObj.attr("path") + "/" + thisObj.attr("name");
+        $.post("/unittest/delFile", { path: path }, function (result) {
+            if (result == "done") {
+                DoViewLog();
+            }
+            else {
+                alert("删除失败");
+            }
+        });
+    }
+    function doOptDelDir(obj) {
+        var thisObj = $(obj);
+        var path = thisObj.attr("path") + "/" + thisObj.attr("name");
+        $.post("/unittest/doOptDelDir", { path: path }, function (result) {
+            if (result == "done") {
+                DoViewLog();
+            }
+            else {
+                alert("删除失败");
+            }
+        });
+    }
+    
+    function delLogFile(obj) {
+        var path = $(obj).attr("tag");
+        $.post("/unittest/delFile", { path: path }, function (result) {
+            if (result == "done") {
+                DoViewLog();
+                $(obj).parent().parent().remove();
+            }
+            else {
+                alert("删除失败");
+            }
+        });
+    }
+    function editLogFile(obj) {
+        var path = $(obj).attr("tag");
+        $.post("/unittest/editTextFile", { path: path, text: $("#viewPlant textarea").val() }, function (result) {
+            if (result == "done") {
+                $(obj).parent().parent().remove();
+            }
+            else {
+                alert("修改失败");
+            }
+        });
+    }
+</script>
+<script type="text/javascript">
+    $("#viewMSMQ").on("dblclick", ".myQueueItem", function () {
+        $(".myQueueItem").removeClass("myQueueItemSelect");
+        $("#optMSMQPop").remove();
+        var thisObj = $(this);
+        thisObj.addClass("myQueueItemSelect");
+        var div = document.createElement("div");
+        div.id = "optMSMQPop";
+        //为div添加样式
+        var style = document.createAttribute("style");
+        div.setAttributeNode(style);
+        div.style.backgroundColor = "rgb(1,135,206)";
+        //div.style.borderWidth = "20px";
+        div.style.borderColor = "#000";
+        div.style.width = "100%";
+        div.style.height = "300px";
+        div.style.position = "absolute";
+        div.style.left = "0px";
+        div.style.padding = "10px;"
+        div.style.wordWrap = "break-word";
+        div.style.top = thisObj.offset().top;
+        div.style.zIndex = "999999";
+        div.innerHTML = "<div><input type='button' value='关闭' onclick='$(this).parent().parent().remove()' class='btn-info' /><input type='button' value='检查环境' onclick='checkQueueItemSelectContent()' class='btn-info' /></div><div class='myQueueItemSelectContentResult'></div><div class='myQueueItemSelectContent'>" + thisObj.html() + "</div>";
+        //把div追加到body
+        document.getElementsByTagName("body").item(0).appendChild(div);
+
+    });
+    function checkQueueItemSelectContent() {
+        var myQueueItemSelectContent = $(".myQueueItemSelectContent").html();
+        var myQueueItemObj = $.parseJSON(myQueueItemSelectContent);
+        var fileJavaID = myQueueItemObj.fileJavaID;
+        var fileFTPPath = myQueueItemObj.fileFTPPath;
+        var isDeleteAfterHandle = myQueueItemObj.isDeleteAfterHandle;
+        var strResult = "";
+        strResult += "fileJavaID:" + fileJavaID + "<br/>";
+        strResult += "fileFTPPath:" + fileFTPPath + "<br/>";
+        strResult += "isDeleteAfterHandle:" + isDeleteAfterHandle + "<br/><br/>";
+        $(".myQueueItemSelectContentResult").html("");
+        $.post("/UnitTest/checkMSMQ", { javaId: fileJavaID, fileFTPPath: fileFTPPath, isDeleteAfterHandle, isDeleteAfterHandle }, function (data) {
+            strResult += data;
+            $(".myQueueItemSelectContentResult").html(strResult);
+        });
+
+    }
+    function mq_delFile(obj) {
+        var tag = $(obj).attr("tag");
+        $.post("/UnitTest/MQ_delFile", { fileFTPPath: tag }, function (data) {
+            if (data == "done") {
+                $(obj).remove();
+            }
+            else {
+                alert(data);
+            }
+        });
+    }
+    function mq_sendBackToMQ(obj) {
+        var isDeleteAfterHandle = $(obj).attr("isDeleteAfterHandle");
+        var javaId = $(obj).attr("javaId");
+        var fileFTPPath = $(obj).attr("fileFTPPath");
+        var mqTag = $("#viewMSMQ").attr("tag");
+        var mqid = $(".myQueueItemSelect").attr("tag");
+        $.post("/UnitTest/delFromMSMQ", { mqTag: mqTag, mqid: mqid }, function (data) {
+            if (data != "") {
+                $.post("/UnitTest/backToMQ", { fileJavaID: javaId, fileFTPPath: fileFTPPath, isDeleteAfterHandle: isDeleteAfterHandle }, function (result) {
+
+                    if (result == "done") {
+                        doViewMSMQData(mqTag)
+                        $(".myQueueItem").removeClass("myQueueItemSelect");
+                        $("#optMSMQPop").remove();
+                    }
+                    else {
+                        alert(result);
+                    }
+                });
+            }
+        });
+    }
+    function mq_popMQ(obj) {
+        var mqTag = $("#viewMSMQ").attr("tag");
+        var mqid = $(".myQueueItemSelect").attr("tag");
+        $.post("/UnitTest/delFromMSMQ", { mqTag: mqTag, mqid: mqid }, function (data) {
+            if (data != "") {
+                doViewMSMQData(mqTag)
+                $(".myQueueItem").removeClass("myQueueItemSelect");
+                $("#optMSMQPop").remove();
+            }
+        });
+    }
+</script>
+
+<div id="container" style="min-width:400px;height:400px"></div>
+<script type="text/javascript">
+    $(function () {
+        var timeCost = timeDiff("2019-6-19 13:25:08.346", "2019-6-19 12:28:31.577");
+        var chart = Highcharts.chart('container', {
+            chart: {
+                type: 'line'
+            },
+            title: {
+                text: '文件预处理性能分析记录'
+            },
+            subtitle: {
+                text: '文件处理数与性能关系'
+            },
+            xAxis: {
+                categories: ['1', '500', '1000']
+            },
+            yAxis: {
+                title: {
+                    text: '时间（毫秒）'
+                },
+                labels: {
+                    formatter: function () {
+                        return getFormattingTime(this.value) + '';
+                    }
+                }
+                , tickPositions: [0, timeCost / 5, (timeCost / 5) * 2, (timeCost / 5) * 3, (timeCost / 5) * 4, (timeCost / 5) * 5]
+            },
+            tooltip: {
+                pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}毫秒</b><br/>',
+                shared: true
+            },
+            plotOptions: {
+                line: {
+                    dataLabels: {
+                        // 开启数据标签
+                        enabled: true
+                        , formatter: function () {
+                            return getFormattingTime(this.y) + '';
+                        }
+                    },
+                    // 关闭鼠标跟踪，对应的提示框、点击事件会失效
+                    enableMouseTracking: true
+                }
+            },
+            series: [{
+                name: '六月19日【88.12】',
+                marker: {
+                    symbol: 'square'
+                },
+                data: [timeDiff("2019-6-19 12:31:04.381", "2019-6-19 12:29:21.333"), timeDiff("2019-6-19 12:36:30.509", "2019-6-19 12:29:21.333"), timeDiff("2019-6-19 12:42:40.339", "2019-6-19 12:29:21.333")]
+            }, {
+                name: '六月19日【88.11】',
+                marker: {
+                    symbol: 'diamond'
+                },
+                data: [timeDiff("2019-6-19 12:28:52.768", "2019-6-19 12:28:31.577"), timeDiff("2019-6-19 13:08:05.850", "2019-6-19 12:28:31.577"), timeDiff("2019-6-19 13:25:08.346", "2019-6-19 12:28:31.577")]
+            }]
+        });
+    });
+    function timeDiff(endTime, startTime) {
+        var stime = Date.parse(new Date(startTime));
+        var etime = Date.parse(new Date(endTime));
+        var usedTime = etime - stime;  //两个时间戳相差的毫秒数
+        return usedTime;
+    }
+    function getFormattingTime(date3) {
+        //计算出相差天数
+        var days = Math.floor(date3 / (24 * 3600 * 1000))
+
+
+        //计算出小时数
+
+        var leave1 = date3 % (24 * 3600 * 1000)    //计算天数后剩余的毫秒数
+        var hours = Math.floor(leave1 / (3600 * 1000))
+        //计算相差分钟数
+        var leave2 = leave1 % (3600 * 1000)        //计算小时数后剩余的毫秒数
+        var minutes = Math.floor(leave2 / (60 * 1000))
+
+
+        //计算相差秒数
+        var leave3 = leave2 % (60 * 1000)      //计算分钟数后剩余的毫秒数
+        var seconds = Math.round(leave3 / 1000)
+        var result = "";
+        if (days > 0) {
+            result += days + "天 ";
+        }
+        if (hours > 0) {
+            result += hours + "小时 ";
+        }
+        if (minutes > 0) {
+            result += minutes + "分钟 ";
+        }
+        result += seconds + "秒 ";
+        return result;
+    }
+</script>
+<script src="/Content/highcharts.js"></script>

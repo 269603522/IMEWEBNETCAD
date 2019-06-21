@@ -1,0 +1,21 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+</head>
+<body>
+    <h2>访问者信息</h2>
+    @{ 
+        string strShow = ViewData["UserInfo"].ToString();
+    }
+    <div>
+        <span>
+            @HttpUtility.HtmlDecode(strShow) 
+        </span>
+    </div>
+</body>
+</html>
+
+
+

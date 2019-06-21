@@ -1,0 +1,123 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>查看记录</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="~/Content/Site.css" rel="stylesheet" />
+    <link href="~/Content/DataTables/css/jquery.dataTables.css" rel="stylesheet" />
+    <link href="~/Content/DataTables/css/responsive.dataTables.min.css" rel="stylesheet" />
+    <script src="~/Content/DataTables/jquery-3.3.1.js"></script>
+    <script src="~/Content/Vue/vue.js"></script>
+    <script src="~/Content/Vue/vue-router.js"></script>
+    <script src="~/Content/DataTables/js/jquery.dataTables.js"></script>
+    <script src="~/Content/DataTables/js/dataTables.responsive.js"></script>
+    <script src="~/Content/Toast/Toast.js"></script>
+</head>
+<body>
+    <h1 style="text-align:center;font-size:48px; font-family:Arial;font-weight:normal;">文件查看下载列表</h1>
+    <br />
+    <div id="app">
+
+        <a href="/List/HandleList" id="aHandleList">预处理记录列表</a>
+        <br />
+        <br />
+        <table id="example" class="display" style="width:100%">
+            <thead>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</body>
+</html>
+<script type="text/javascript">
+    var tableObj=null;
+    $(document).ready(function () {
+        tableObj=$('#example').DataTable({
+            destroy: true,
+            "processing": true,
+            responsive: true,
+            "serverSide": true,
+            "sProcessing": "正在获取数据，请稍后...",
+            searching: true, //禁用原生搜索
+            orderMulti: false, //启用多列排序
+            order: [], //取消默认排序查询,否则复选框一列会出现小箭头　
+            "bSort": false,// 排序  
+            "ajax": {
+                "url": "/List/getReadingList/"
+                , "type": "POST"
+                , dataFilter: function (data) {
+                    var result = data;
+                    if (data != "") {
+                        var dataStr = data.replace(/\\/g, "\\\\");
+                        var json = (new Function("", "return " + dataStr))();
+                        if (json.recordsTotal > 0) {
+                            result= JSON.stringify(json);
+                        }
+                    }
+                    return result;
+                }
+            }
+            ,columnDefs: [{
+                "defaultContent": "",
+                "targets": "_all"
+            }]
+            ,
+            "columns": [
+                { "data": "CreateTime", "sTitle": "查看时间" },
+                { "data": "CreaterIP", "sTitle": "查看IP" },
+              
+                { "data": "ReadingCode", "sTitle": "读取号"  },
+                { "data": "FileURL", "sTitle": "文件路径" },
+                { "data": "CreateType", "sTitle": "查看类别" },
+                { "data": "UserAgent", "sTitle": "浏览器信息", "searchable": "false" },
+                { "data": "HandleCode", "sTitle": "预处理号" },
+                {
+                    data: 'ReadingCode',
+                    "sTitle": "操作",
+                    "render": function (data, type, full, meta) {
+                        var edithtml = 
+                            "<button class=\"btn btn-info\" tag='" + data+"' type=\"button\" onclick='deleteThis(this)'>删除</button>"
+                        return edithtml;
+                    }
+                }
+            ]
+            , oLanguage: {
+                sInfo: "当前第 _START_ - _END_ 条　共计 _TOTAL_ 条",
+                sInfoEmpty: "当前第 0 - 0条　共计 0 条",
+                sInfoFiltered: "(从 _MAX_ 条记录中过滤)",
+                sLengthMenu: "每页显示 _MENU_条",
+                sLoadingRecords: "加载中...",
+                sProcessing: "加载中...",
+                sSearch: "搜索:",
+                sZeroRecords: "没有找到符合条件的数据",
+                sEmptyTable: "没有找到符合条件的数据",
+                oPaginate: {
+                    sFirst: "首页",
+                    sLast: "尾页",
+                    sNext: "下一页",
+                    sPrevious: "上一页"
+                }
+            }
+        });
+
+    });
+    function deleteThis(obj) {
+        $.post("/List/deleteReadingByCode/", { code: $(obj).attr("tag") }, function (data) {
+            Toast(data, 1500);
+            bind();
+        });
+    }
+    function bind() {
+        if (tableObj != null) {
+            tableObj.ajax.url("/List/getReadingList/").load();
+            //数据的地址ajax_datatable
+        }
+        else {
+            alert("刷新列表失败！");
+        }
+    }
+
+
+
+</script>
+

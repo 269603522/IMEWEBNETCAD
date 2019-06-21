@@ -1,0 +1,398 @@
+﻿@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section head{
+    @Styles.Render("~/Content/toolbar")
+    <link href="/Content/imgSwitchList.css" rel="stylesheet" />
+    <link href="/Content/iconfont.css" rel="stylesheet" />
+    <link href="~/Content/fixed.css" rel="stylesheet" />
+    <link href="/Content/style2.css" rel="stylesheet" />
+    <link href="/Content/toolbar-extension.css" rel="stylesheet" />
+    <script src="/Content/Toast/Toast.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            $("#buttonSet0").buttonset();
+            $("#buttonSet1").buttonset();
+            $("#buttonSet2").buttonset();
+
+            var iconSet = [{ icon: "icon_print", text: false }, { icon: "icon_zoomin", text: false }, { icon: "icon_zoomout", text: false }, { icon: "icon_orbit", text: false }, { icon: "icon_bw", text: false }, { icon: "icon_extents", text: false }, { icon: "icon_layers", text: false }, { icon: "icon_select", text: false }, { icon: "icon_line", text: false }, { icon: "icon_poly", text: false }, { icon: "icon_area", text: false }];
+            $("button.nav").each(function (i) {
+                if ((i < iconSet.length)) {
+                    $(this).button({
+                        text: iconSet[i].text,
+                        icons: { primary: iconSet[i].icon }
+                    });
+                } else {
+                    $(this).button();
+                }
+            });
+            $("#dialogLayers").dialog({ autoOpen: false });
+            $("#dialogMeasuring").dialog({ autoOpen: false, close: function (ev, ui) { if (!noClosedMeas) measStart(this, false); } });
+            $("#dialogEntInfo").dialog({ autoOpen: false, width: 450 });
+
+            changeDialogVisibility = function (dlg) {
+                if ($(dlg).dialog("isOpen")) {
+                    $(dlg).dialog("close");
+                } else {
+                    $(dlg).dialog("open");
+                }
+            }
+        });
+    </script>
+
+    <style type="text/css">
+        @@media screen {
+            .nonPrintableArea {
+                display: block;
+            }
+
+            .printableArea {
+                display: none;
+            }
+        }
+
+        @@media print {
+            body {
+                margin: 0;
+                padding: 0;
+            }
+
+            .nonPrintableArea {
+                display: none;
+            }
+
+            .printableArea {
+                display: block;
+            }
+        }
+    </style>
+}
+
+<div class="printableArea">
+    <img id="printImage" onload="window.print()" />
+</div>
+<div class="nonPrintableArea">
+    @*<div class=" left makesmaller" style="position:fixed;bottom:10px;width:100%;text-align:center; z-index:100; text-align:center;">
+            <button class="nav" onclick="popupPrint();">打印</button>
+            <span id="buttonSet0">
+                <button class="nav" onclick="CADControl1.cad.face.zoomIn();">放大</button>
+                <button class="nav" onclick="CADControl1.cad.face.zoomOut();">缩小</button>
+                <button class="nav" onclick="CADControl1.cad.orbit.enabled = !CADControl1.cad.orbit.enabled;">轨迹</button>
+            </span>
+            <span id="buttonSet1">
+                <button class="nav" onclick="CADControl1.cad.face.changeBackgroundColor(this);">背景</button>
+                <button class="nav" onclick="CADControl1.cad.face.resetView();">默认窗体大小</button>
+                <button class="nav" onclick="changeDialogVisibility('#dialogLayers');">分层</button>
+            </span>
+            <span id="buttonSet2">
+                <button class="nav" onclick="measStart(this, 1)">测距</button>
+                <button class="nav" onclick="measStart(this, 2)" style="display:none;">线条</button>
+                <button class="nav" onclick="measStart(this, 3)" style="display:none ;">区域</button>
+            </span>
+            <select class="nav" id="dropDownlist" style="display:none ;"></select>
+            <select class="nav" id="viewsDownlist" style="display:none ;"></select>
+            <select class="nav" id="displayDownlist" style="display:none ;"></select>
+        </div>*@
+    <div class="fixed-bottom">
+        <div class="nav-button-radius">
+            <div class="nav-button nav-button-print" onclick="popupPrint();">
+                <div class="icon">
+                    <svg t="1559798730807" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="7412" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200"><defs><style type="text/css"></style></defs><path d="M296.64 416.768h441.024V180.928l-29.76 40.384-4.736 6.336-7.296-2.816-266.496-103.36H296.64v295.296z m578.816 413.568v134.528H167.808v-134.528h-31.616a104.512 104.512 0 0 1-104.256-104.192V455.808c0-57.28 46.848-104.192 104.256-104.192h98.112V59.136H439.68l2.88 0.32 330.048 41.6 27.392 3.456V351.616h87.872c57.28 0 104.128 46.912 104.128 104.192v270.336c0 57.344-46.848 104.192-104.128 104.192h-12.416z m-624.448 0v51.328h541.248v-51.328H251.008zM373.76 329.984h304.64v21.312H373.76v-21.312z m0-69.504h288.832v21.312H373.76V260.48z m0-62.592h133.376v21.312H373.76v-21.312z m355.008-39.744l-32.832 44.48-185.6-72 218.432 27.52z m0 0" p-id="7413"></path></svg>
+                </div>
+                <h3>打印</h3>
+            </div>
+        </div>
+        <div class="nav-button-radius">
+            <div class="nav-button nav-button-zoomin" onclick="CADControl1.cad.face.zoomIn();">
+                <div class="icon">
+                    <svg t="1559798963162" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="19200" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200"><defs><style type="text/css"></style></defs><path d="M977.216 909.056l-166.4-166.464a435.072 435.072 0 0 0 95.872-272.896 437.376 437.376 0 1 0-437.312 437.312 434.752 434.752 0 0 0 273.664-96.512l166.336 166.336a48.512 48.512 0 0 0 68.8 0.896 48.64 48.64 0 0 0-0.96-68.672zM128.064 469.76a341.312 341.312 0 1 1 682.624 0A341.312 341.312 0 0 1 128 469.76z" p-id="19201"></path><path d="M627.52 427.648H511.488V311.744c0-23.872-18.88-43.328-42.112-43.328s-42.112 19.456-42.112 43.328v115.968H311.296a42.816 42.816 0 0 0-43.328 42.176c0 23.296 19.456 42.048 43.328 42.048h115.968v115.968c0 23.872 18.88 43.392 42.112 43.392s42.112-19.52 42.112-43.392V511.936h115.968a42.816 42.816 0 0 0 43.328-42.112 42.752 42.752 0 0 0-43.264-42.176z" p-id="19202"></path></svg>
+                </div>
+                <h3>放大</h3>
+            </div>
+            <div class="nav-button nav-button-zoomout" onclick="CADControl1.cad.face.zoomOut();">
+                <div class="icon">
+                    <svg t="1559799028900" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="19938" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200"><defs><style type="text/css"></style></defs><path d="M977.216 909.056l-166.4-166.464a435.072 435.072 0 0 0 95.872-272.896 437.376 437.376 0 1 0-437.312 437.312 434.752 434.752 0 0 0 273.664-96.512l166.336 166.336a48.512 48.512 0 0 0 68.8 0.896 48.64 48.64 0 0 0-0.96-68.672zM128.064 469.76a341.312 341.312 0 1 1 682.624 0A341.312 341.312 0 0 1 128 469.76z" p-id="19939"></path><path d="M627.52 427.648H311.296a42.816 42.816 0 0 0-43.328 42.176c0 23.296 19.456 42.112 43.328 42.112h316.16a42.88 42.88 0 0 0 43.328-42.112 42.88 42.88 0 0 0-43.264-42.176z" p-id="19940"></path></svg>
+                </div>
+                <h3>缩小</h3>
+            </div>
+            <div class="nav-button nav-button-zoomout"  onclick="CADControl1.cad.orbit.enabled = !CADControl1.cad.orbit.enabled;">
+                <div class="icon">
+                    <svg t="1559799122307" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="20599" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200"><defs><style type="text/css"></style></defs><path d="M782.4 910.9c54 0 98.8-41.4 98.8-93.8s-44.8-93.8-98.8-93.8H241.2c-20.3 0-35.7-14.3-35.7-30.7 0-16.3 15.4-30.7 35.7-30.7h112.1c17.4 0 31.5-14.1 31.5-31.5-0.4-17.8-14.5-32-31.5-31.6H241.2c-54 0-98.8 41.4-98.8 93.8s44.8 93.8 98.8 93.8h541.1c20.3 0 35.8 14.3 35.8 30.7 0 16.3-15.4 30.7-35.8 30.7H330.9c-17-0.4-31.1 13.7-31.5 31.5 0 17.4 14.1 31.6 31.5 31.6h451.5zM541.5 112.1c-114.3-0.3-206.9 92.3-207.2 206.6 0 84.8 114.6 243.5 173.6 319.3 16.5 18.6 44.9 20.3 63.5 3.9l3.9-3.9c58.9-75.8 173.6-234.1 173.6-319.3-0.4-114.3-93.1-206.7-207.4-206.6z m0 323.3c-30.8 0-60.3-12.2-82.1-34-21.8-21.8-34-51.3-34-82.1 0-30.8 12.2-60.3 34-82 21.8-21.7 51.3-33.9 82.1-33.8 63.2 1.1 113.9 52.7 113.9 116 0 63.2-50.7 114.8-113.9 115.9z m0 0" p-id="20600"></path></svg>
+                </div>
+                <h3>轨道</h3>
+            </div>
+        </div>
+        <div class="nav-button-radius">
+            <div class="nav-button nav-button-bg"  onclick="CADControl1.cad.face.changeBackgroundColor(this);">
+                <div class="icon">
+                    <svg t="1559799867476" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="48108" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200"><defs><style type="text/css"></style></defs><path d="M894.3616 223.0272l-370.688-109.3632c-3.4816-1.024-7.168-1.6384-10.8544-1.6384-3.6864 0-7.168 0.4096-10.6496 1.4336l-351.232 102.4c-4.9152 0.2048-9.4208 1.6384-13.5168 3.8912l-6.5536 1.8432c-16.384 4.7104-27.648 19.6608-27.648 36.864L102.1952 733.184c0 15.9744 9.8304 30.3104 24.7808 36.0448L497.4592 909.312c4.3008 1.6384 9.0112 2.4576 13.5168 2.4576 4.5056 0 9.216-0.8192 13.5168-2.4576l371.5072-138.8544c14.9504-5.5296 24.9856-19.8656 24.9856-35.84l0.8192-474.5216c0-17.2032-11.0592-32.1536-27.4432-37.0688zM529.2032 177.5616l216.064 63.6928c7.168 2.048 7.168 12.288 0.2048 14.5408l-215.6544 68.4032c-11.6736 3.6864-23.9616 3.6864-35.6352 0l-214.8352-69.2224c-7.168-2.2528-6.9632-12.4928 0.2048-14.5408l216.8832-63.0784c10.6496-2.8672 22.1184-2.8672 32.768 0.2048zM185.344 287.5392l284.672 91.5456c7.168 2.2528 12.0832 9.0112 12.0832 16.5888v418.816c0 12.0832-12.0832 20.48-23.552 16.1792L173.2608 722.7392c-6.7584-2.6624-11.264-9.0112-11.264-16.384l0.8192-402.2272c-0.2048-11.8784 11.4688-20.0704 22.528-16.5888z" p-id="48109"></path></svg>
+                </div>
+                <h3>背景</h3>
+            </div>
+            <div class="nav-button nav-button-layers" onclick="CADControl1.cad.face.resetView();">
+                <div class="icon">
+                    <svg t="1559800024805" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="51137" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200"><defs><style type="text/css"></style></defs><path d="M871.537778 118.328889h-728.177778c-38.684444 0-68.266667 29.582222-68.266667 68.266667v634.88c0 36.408889 29.582222 68.266667 68.266667 68.266666h728.177778c36.408889 0 68.266667-31.857778 68.266666-68.266666V186.595556c0-36.408889-29.582222-68.266667-68.266666-68.266667z m-573.44 116.053333c38.684444 0 72.817778 31.857778 72.817778 72.817778s-31.857778 72.817778-72.817778 72.817778c-38.684444 0-72.817778-31.857778-72.817778-72.817778s34.133333-72.817778 72.817778-72.817778z m-52.337778 552.96c-6.826667 0-13.653333-2.275556-20.48-6.826666-13.653333-11.377778-13.653333-27.306667-2.275556-40.96l141.084445-197.973334c11.377778-11.377778 27.306667-13.653333 40.96-4.551111l122.88 86.471111L748.657778 386.844444c11.377778-11.377778 65.991111-70.542222 97.848889-4.551111v402.773334c0 2.275556-600.746667 2.275556-600.746667 2.275555z" fill="" p-id="51138"></path></svg>
+                </div>
+                <h3>原图</h3>
+            </div>
+        </div>
+        <div class="nav-button-radius">
+            <div class="nav-button nav-button-distance"  onclick="measStart(this, 1)">
+                <div class="icon">
+                    <svg t="1559800723348" fill="#fff" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="56289" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200"><defs><style type="text/css"></style></defs><path d="M100.32 332.07l71.61-67.92 42.99 40.75-71.62 67.92 42.96 40.75 71.64-67.92 42.98 40.75-71.64 67.92 14.82 35.36 223.3-223.3-152.17-165.21c-23.36-22.16-70.12-15.01-93.47 7.15L78.47 244.15c-23.38 22.16-15.83 52.9 7.53 75.06l14.32 12.86zM85.99 892.53c-5.27 15.01 9.05 28.59 24.88 23.59l261.62-82.92-200.56-190.16-85.94 249.49zM936.43 299.9c21.87-20.73 21.87-52.9 0-71.49L811.28 109.75c-21.86-20.73-55.78-20.73-75.4 0l-91.23 86.5L845.21 386.4l91.22-86.5z m-320.42-76.49l-415.42 393.9 200.56 190.15 415.41-393.89-200.55-190.16zM945.48 698.8L759.26 522.23 530.07 739.55l42.96 40.75 71.61-67.92 43 40.75L616 821.05l42.96 40.75 71.64-67.92 42.98 40.75-71.64 67.92 14.33 13.58c23.38 22.16 55.78 28.6 79.16 6.44L938.7 786.73c22.61-22.88 30.16-65.77 6.78-87.93z" p-id="56290"></path></svg>
+                </div>
+                <h3>测量</h3>
+            </div>
+        </div>
+    </div>
+    <div id="dialogLayers" class="makesmaller" title="Layers">
+        <form id="checkBoxlist" style="max-height: 500px"></form>
+    </div>
+    <div id="dialogMeasuring" class="makesmaller" title="Mass">
+        <form id="measuringList" style="max-height: 500px">
+            <label id="lbDistanse" for="edDistance">Distance</label><input id="edDistance" type="text" />
+            <br />
+            <label id="lbDeltaX" for="edDeltaX">Delta X</label><input id="edDeltaX" type="text" />
+            <br />
+            <label id="lbDeltaY" for="edDeltaY">Delta Y</label><input id="edDeltaY" type="text" />
+            <br />
+            <label id="lbPerimeter" for="edPerimeter">Perimeter</label><input id="edPerimeter" type="text" />
+            <br />
+            <label id="lbArea" for="edArea">Area</label><input id="edArea" type="text" />
+            <br />
+            <label id="lbAngle" for="edAngle">Angle</label><input id="edAngle" type="text" />
+        </form>
+    </div>
+    <div id="dialogEntInfo" class="makesmaller" title="Entity info">
+    </div>
+    <br />
+
+    @Html.Partial("CADControl")
+
+    @*<div style="position:fixed;right:20px;bottom:20px;width:300px;height:300px;background-color:dodgerblue; display:none;">
+            <img id="previewImg" style="width:300px;height:300px;" src="@ViewBag.Thumbnail" />
+
+        </div>*@
+
+</div>
+@*<div id="imgSwitch" class="left-img imgSwitch active "></div>
+    <div id="isDisplayIcon" class="left-img isDisplay active iconfont-ime icon-kaiqiyincang"></div>*@
+@*<div id="imgSwitchList" class="imgSwitchList active">
+        <div class="div-move">
+            <ul>
+                <li onclick="preview('8a99539669b955a20169b974e17c00e9')">
+                    <img id="previewImg" src="@ViewBag.Thumbnail" />
+                </li>
+            </ul>
+        </div>
+        <span class="sp-01 noClick"></span>
+        <span class="sp-02 noClick"></span>
+    </div>*@
+@*<div id="showTT01" class="dockingPanel" style="display: block; width: 50px; height: 50px; top: 10px; right: 300px; max-height: 969px; max-width: 1914px; resize: none;"><div class="body"><i class="iconfont-ime add-markup" onclick="showAddMarkup()"></i><p>添加</p></div></div>
+    <div id="showTT02" class="dockingPanel" style="display: block; width: 50px; height: 50px; top: 10px; right: 220px; max-height: 969px; max-width: 1914px; resize: none;"><div class="body"><i class="iconfont-ime show-annotations" onclick="showMarkupList()"></i><p>查看批注</p><span class="markupCount hide">0</span></div></div>
+    <div id="showTT06" class="dockingPanel" style="display: block; width: 50px; height: 50px; top: 10px; right: 220px; max-height: 969px; max-width: 1914px; resize: none;"><div class="body"><i class="icon-fentu" onclick="showFentu(0)"><img src="/Content/images/fentu.png"></i><p>分图</p><span class="markupCount hide">0</span></div></div>
+    <div id="showTT010" class="dockingPanel" style="display: block; width: 50px; height: 50px; top: 10px; right: 210px; max-height: 969px; max-width: 1914px; resize: none;"><div class="body"><i class="icon-fentu" onclick="showFentu(1)"><img src="/Content/images/hejia-icon.png"></i><p>核价</p><span class="markupCount hide">0</span></div></div>
+    <div id="showTT05" class="dockingPanel" style="display: block; width: 50px; height: 50px; top: 10px; right: 160px; max-height: 969px; max-width: 1914px; resize: none;"><div class="body"><i class="iconfont-ime icon-ai33" onclick="download('8a99539669b955a20169b974e17c00e9')"></i><p>下载</p><span class="markupCount hide">0</span></div></div>
+    <div id="showTT04" class="dockingPanel" style="display: block; width: 50px; height: 50px; top: 10px; right: 100px; max-height: 969px; max-width: 1914px; resize: none;"><div class="body"><i class="iconfont-ime icon-dayin" onclick="generateBatchPrint('8a99539669b955a20169b974e17c00e9','A','8a9953966947319701694749f07a0037','p')"></i><p>打印</p><span class="markupCount hide">0</span></div></div>
+    <div id="showTT03" class="dockingPanel" style="display: block; width: 50px; height: 50px; top: 10px; right: 100px; max-height: 969px; max-width: 1914px; resize: none;"><div class="body"><i onclick="generateBatchPrint('8a99539669b955a20169b974e17c00e9','A','8a9953966947319701694749f07a0037','q')"><img src="/Content/images/bendichakan.png"></i><p>编辑</p><span class="markupCount hide">0</span></div></div>*@
+<script type="text/javascript">
+
+    // CADControl1.cad.drawImage(img, x, y, w, h)
+
+
+    CADControl1.cad.face.updateCBL("checkBoxlist");
+    CADControl1.cad.face.updateDDL("dropDownlist");
+
+    var viewsNames = ["Initial View", "-", "Top View", "Bottom View", "Left View", "Right View", "Front View", "Back View", "-", "SW Isometric", "SE Isometric", "NE Isometric", "NW Isometric"];
+    CADControl1.cad.face.updateVDL("viewsDownlist", viewsNames);
+    var displayModes = ["2D Wireframe", "-", "3D Wireframe", "3D Hidden lines", "3D Smooth shading", "3D Flat shading"];
+    CADControl1.cad.face.updateVDL("displayDownlist", displayModes, 100);
+
+    cad.get(CADControl1.cad, "mode?" + cad.makeParams({ id: CADControl1.cad.guid }), undefined, function (msg) {
+        if (msg > 0)
+            displayDownlist.selectedIndex = msg;
+    }, null, true);
+
+    var measStart = function (e, t) {
+        var m = CADControl1.cad.measuring;
+        m.start(m.mode != t ? t : 0);
+    }
+
+    var showMeasuring = function (dist, area, perimeter, angle, deltaX, deltaY, isShow) {
+        var dlg = '#dialogMeasuring';
+        var isOpen = false;
+        noClosedMeas = isShow;
+        if (cad.utils.browser.msie) {
+            edDistance = document.getElementById("edDistance");
+            edArea = document.getElementById("edArea");
+            edPerimeter = document.getElementById("edPerimeter");
+            edAngle = document.getElementById("edAngle");
+            edDeltaX = document.getElementById("edDeltaX");
+            edDeltaY = document.getElementById("edDeltaY");
+        }
+
+        if (dist) {
+            edDistance.value = dist.toFixed(2);
+            edDistance.style.display = "inline";
+            isOpen = true;
+        } else {
+            edDistance.style.display = "none";
+
+        }
+
+        if (deltaX) {
+            edDeltaX.value = deltaX.toFixed(2);
+            edDeltaX.style.display = "inline";
+            isOpen = true;
+        } else {
+            edDeltaX.style.display = "none";
+        }
+
+        if (deltaY) {
+            edDeltaY.value = deltaY.toFixed(2);
+            edDeltaY.style.display = "inline";
+            isOpen = true;
+        } else {
+            edDeltaY.style.display = "none";
+        }
+
+        if (area) {
+            edArea.value = area.toFixed(2);
+            edArea.style.display = "inline";
+            isOpen = true;
+        } else {
+            edArea.style.display = "none";
+        }
+
+        if (perimeter) {
+            edPerimeter.value = perimeter.toFixed(2);
+            edPerimeter.style.display = "inline";
+            isOpen = true;
+        } else {
+            edPerimeter.style.display = "none";
+        }
+
+        if (angle) {
+            edAngle.value = angle.toFixed(2);
+            edAngle.style.display = "inline";
+            isOpen = true;
+        } else {
+            edAngle.style.display = "none";
+        }
+
+        if (!isShow)
+            isOpen = false;
+        else if (isShow && CADControl1.cad.measuring.mode == 1)
+            isOpen = true;
+
+        if (isOpen) {
+            if (!($(dlg).dialog("isOpen"))) {
+                $(dlg).dialog("open");
+                //$(dlg).dialog('option', 'position', [x,y]);
+            }
+        } else {
+            $(dlg).dialog("close");
+        }
+
+        noClosedMeas = false;
+    }
+
+    CADControl1.cad.measuring.onShowMeasuring = showMeasuring;
+
+    CADControl1.cad.onselect = function (msg) {
+        dialogEntInfo.innerHTML = "";
+        //debugger;
+        var innerHTML = "<table style=\"width:100%\">";
+        var isOpen = false;
+
+        if (msg) {
+            //var xml = msg.xml;
+            //delete  msg.xml;
+            var isOpen = false;
+
+            var strPoint = "";
+            var strHandle = "";
+            for (var i = 0; i < msg.length; i++) {
+                innerHTML += "<tr><td><b>" + msg[i].Key + "</b></td><td>" + msg[i].Value + "</td></tr>";
+                isOpen = true;
+                if (msg[i].Key == "Box") {
+                    strPoint = msg[i].Value;
+                }
+                else if (msg[i].Key == "Handle") {
+                    strHandle = msg[i].Value;
+                }
+            }
+            dialogEntInfo.innerHTML = innerHTML + "</table>";
+            // alert(strHandle);
+            Toast(strHandle+" Point(" + strPoint + ") "  , 1000);
+            CADControl1.cad.zoomToEntityByHandle(strHandle);
+  
+            if (strPoint!=""&&strPoint.indexOf(",") > -1) {
+                var strPoints = strPoint.split(",");
+                var top = parseFloat($.trim(strPoints[0].split("=")[1]));
+                if (top < 0) {
+                    top = -top;
+                }
+                var left = parseFloat($.trim(strPoints[1].split("=")[1]));
+                if (left < 0) {
+                    left = -left;
+                }
+                Toast(strHandle + " XY(" + left + "," + top+ ") ", 10000);
+                Watermark2(CADControl1, "/Content/buttons/select.png", "测试水印", left, top);
+            }
+
+            // if (isOpen)
+            //   $(dialogEntInfo).dialog("open");
+        }
+
+        //  if (!isOpen)
+        //    $(dialogEntInfo).dialog("close");
+    }
+
+    CADControl1.cad.onprint = function (e) {
+        if (confirm('Are you sure?')) {
+            //printImage.src = e.printUrl;
+            if (e.printUrl)
+                window.open(e.printUrl, '', 'width=600,height=600');
+        }
+        return false;
+    }
+    var p_x = 0; p_y = 0;
+    //setInterval(function () {
+    //  //  Watermark(CADControl1, "/Content/buttons/select.png", "测试水印");
+    //}, 500000);
+
+    function Watermark(CADControlObj, imgurl, addtext) {
+        var img = new Image;
+        img.src = imgurl;
+        CADControlObj.cad.drawImage(img, p_x, p_y, 100, 40);
+        if (p_x < 800) {
+            p_x = p_x + 100;
+        }
+        else {
+            p_x = p_x - 50;
+        }
+        CADControlObj.cad.drawText(p_x, p_y, "[" + p_x + ":" + p_y + "]");
+        p_y = p_y + 10;
+    }
+    function Watermark2(CADControlObj, imgurl, addtext, p_x, p_y) {
+        var img = new Image;
+        img.src = imgurl;
+      //  Toast("Point(" + p_x + "," + p_y + ")",1000);
+       /// alert("Point(" + p_x + "," + p_y + ")");
+        CADControlObj.cad.drawImage(img, p_x, p_y, 100, 100);
+       // CADControlObj.cad.drawText(p_x, p_y, addtext+"[" + p_x + ":" + p_y + "]");
+    }
+
+</script>
+<style>
+</style>
+<script>
+    window.addEventListener('message', function (event) {
+        console.log(event);
+        this.alert("收到"
+            + event.origin + "消息：" + event.data);
+    }, false);
+</script>

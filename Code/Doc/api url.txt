@@ -1,0 +1,20 @@
+第三方查看图纸插件
+https://cadsofttools.com/products/cad-net/
+http://www.cadsofttools.com/download/webcadsdk.zip
+测试网址
+https://beta.imefuture.com
+
+云上制造  123456
+
+
+www.showdoc.cc
+
+
+各位同事：
+如下是禅道地址，请大家收藏，谢谢，有账号不能登录问题请及时和我联系~
+内网地址：http://192.168.3.252/zentao
+外网地址:  180.157.45.9:81
+用户名：名字拼音 （例如：feifei） 
+密码：123456
+
+注：禅道系统对兼容性不完善，请使用chrome浏览器使用
